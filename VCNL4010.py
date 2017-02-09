@@ -24,15 +24,16 @@ def read(bus,deviceAddr):
 	#read from MSBreg5 LSBreg6
 	return bus.readfrom_mem(deviceAddr,0x85,2) 
 
-def set(bus,deviceAddr):
-	#set reg0 0
-	bus.writeto_mem(deviceAddr,0x80,b'\x00')
-
+def init_all(bus,deviceAddr):
+	#reset reg0 Contorl Reg to 0
+	#bus.writeto_mem(deviceAddr,0x80,b'\x00')
+	
+	bus.writeto_mem(deviceAddr,0x80,b'\xFF')
+	
+	bus.writeto_mem(deviceAddr,0x82,b'\x00')
 	#write to reg4 : b'1xxx(rate)d
-	bus.writeto_mem(deviceAddr,0x84,b'\x9d')
+	bus.writeto_mem(deviceAddr,0x84,b'\x9D')
 
-	#set reg0 0x07, to read both
-	bus.writeto_mem(deviceAddr,0x80,b'\x07')
-
-#def setInterruptP(bus,deviceAddr):
+def read_all(bus,deviceAddr):
+    return bus.readfrom_mem(deviceAddr,0x85,4)
 
