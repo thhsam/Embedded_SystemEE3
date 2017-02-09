@@ -1,23 +1,14 @@
 # Embedded_SystemEE3
 EE3 Embedded System EE3
-
 Sensors:
 
-1. Proximity
+    1. Proximity
 
-2. Ambient Light
+    2. Ambient Light
 
-3. Colour
+    3. Colour
 
-4. Light Temperature
-
-
-
-
-
-
-
-
+    4. Light Temperature
 
 Website: Wix Platform
  
