@@ -1,6 +1,12 @@
 # Embedded_SystemEE3
 EE3 Embedded System EE3
 
+Deadline:
+
+       16/2 Demo
+       
+       20/2 Code and Website Deadline
+
 Sensors:
 
     1. Proximity
@@ -10,7 +16,13 @@ Sensors:
     3. Colour
 
     4. Light Temperature
+    
+Main IoT Ideas:
 
+- Play Chess with virtual online opponent (Proximity, Colour)
+
+- Automatic Colour Temperature Light Controller (Ambient Light, Colour)
+    
 Website: Wix Platform
  
     Account: hoshunlo@gmail.com
