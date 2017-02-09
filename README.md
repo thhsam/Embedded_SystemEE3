@@ -5,7 +5,7 @@ Deadline:
 
        16/2 Demo
        
-       20/2 Code and Website Deadline
+       20/2 Code and Website
 
 Sensors:
 
