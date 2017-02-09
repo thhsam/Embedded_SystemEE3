@@ -17,6 +17,12 @@ Sensors:
 
     4. Light Temperature
     
+Hareware:
+
+    1. ESP8266 
+    2. TCS34725
+    3. VCNL4010
+    
 Main IoT Ideas:
 
 - Play Chess with virtual online opponent (Proximity, Colour)
