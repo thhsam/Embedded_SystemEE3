@@ -21,7 +21,15 @@ Main IoT Ideas:
 
 - Play Chess with virtual online opponent (Proximity, Colour)
 
-- Automatic Colour Temperature Light Controller (Ambient Light, Colour)
+       1. Mobile Application (Bluetooth, Wifi)
+              
+              - Store moves, matches statistics
+              
+              - Find opponents
+       
+       2. VR features to play and visualise opponent
+       
+       3. Low cost
     
 Website: Wix Platform
  
