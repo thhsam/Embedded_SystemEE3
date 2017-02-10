@@ -38,6 +38,8 @@ Main IoT Ideas:
        3. Low cost
     
 Website: Wix Platform
+
+http://hoshunlo.wixsite.com/ichess/
  
     Account: hoshunlo@gmail.com
   
