@@ -1,6 +1,4 @@
-import time
-import machine
-import network
+import time,machine,network
 from machine import I2C,Pin
 import VCNL4010,conf
 from umqtt.simple import MQTTClient 
@@ -27,13 +25,30 @@ def save_config():
     except OSError:
         print("Couldn't save /config.json")
 
+def set_network(EESID, EEPW):
+    import network
+    #Disable Automatic Access Point(AP) to reduce Overheads
+    ap_if = network.WLAN(network.AP_IF)
+    ap_if.active(False)
+    
+    sta_if = network.WLAN(network.STA_IF)
+    if not sta_if.isconnected():
+    #Connect to a specificed WiFi Network
+        print('connecting to netowrk...')
+    
+        sta_if.active(True)
+        sta_if.connect(EESID, EEPW)
+        while not sta_if.isconnected():
+            pass
 
-#MQTT network SSID: EEERover  PW: exhibition
-EESID = "EEERover"
-EEPW = "exhibition"
-TOPIC = "esys/ATeam"
-BROKER_ADDRESS = "192.168.0.10"
-CLIENT_ID = machine.unique_id()
+    print('network config:', sta_if.ifconfig())
+
+
+
+def sub_cb(topic, msg):
+    global Tmsg
+    Tmsg = msg
+    print((topic, msg))
 
 # These defaults are overwritten with the contents of /config.json by load_config()
 CONFIG = {
@@ -45,17 +60,24 @@ CONFIG = {
 }
 
 load_config()
-
-ap_if = network.WLAN(network.AP_IF)
-ap_if.active(False)
-
-sta_if = network.WLAN(network.STA_IF)
-sta_if.connect(EESID, EEPW)
-sta_if.isconnected()
+set_network(CONFIG['eesid'],CONFIG['eepw'])
 
 client = MQTTClient(CONFIG['client_id'], CONFIG['broker'])
-#client = MQTTClient(CLIENT_ID,BROKER_ADDRESS)
+client.set_callback(sub_cb)
+client.connect()
+client.subscribe(b"esys/time")
 
+client.wait_msg()
+
+s = str(Tmsg)
+year = s[11]+s[12]+s[13]+s[14]
+month = s[16]+s[17]
+day = s[19]+s[20]
+hh = s[22]+s[23]
+mm = s[25]+s[26]
+ss = s[28]+s[29]        
+
+client.disconnect() 
 client.connect()
 
 bus = I2C(scl = Pin(5),sda = Pin(4),freq=100000)
@@ -66,18 +88,26 @@ VCNL4010.init_all(bus,deviceAddr)
 buf = bytearray(4)
 lum = bytearray(2)
 pro = bytearray(2)
-data = "testdata"
+
+rtc=machine.RTC()
+rtc.datetime((int(year), int(month), int(day), int(hh), int(mm), int(ss), 0, 0))
+rtc.datetime()
 
 while True:
 	buf = VCNL4010.read_all(bus,deviceAddr)
 	lum = buf[0]*256 +buf[1]
 	pro = buf[2]*256 +buf[3]
 	
+        t = rtc.datetime()
 	print ("Luminance: %d lux" %lum)
 	print ("Proximity: %d" %pro)
+        print ("Time: %d-" %t[0] + "%d-" %t[1] + "%d" %t[2], "%d:" %t[3], "%d:" %t[4], "%d" %t[5])
 
-	data = "Luminance: %d lux" %lum + "Proximity: %d" %pro
+        #time = str(t[0])+ "_" + str(t[1]) + "_" + str(t[2))
+        #data = "{Timestamp: %d_%d_%d:%d:%d:%d" (%t[0],%t[1],%t[2],%t[3],%t[4],%t[5])
+	data = "{Luminance: %d," %lum + "Proximity: %d}" %pro
+
 	client.publish(CONFIG['topic'], bytes(data, 'utf-8'))
-	time.sleep(0.5)
+        time.sleep(0.5)
 
 print('END')
