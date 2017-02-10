@@ -1,8 +1,9 @@
 import time,machine,network
-from machine import I2C,Pin
-import VCNL4010,conf
+from machine import I2C,Pin,RTC
+import VCNL4010,conf,TCS3472
 from umqtt.simple import MQTTClient 
 import ubinascii
+import os
 
 def load_config():
     import ujson as json
@@ -82,15 +83,22 @@ client.connect()
 
 bus = I2C(scl = Pin(5),sda = Pin(4),freq=100000)
 deviceAddr = 19
+colordeviceAddr = 41
 
 VCNL4010.init_all(bus,deviceAddr)
+TCS3472.set(bus,colordeviceAddr)
 
 buf = bytearray(4)
 lum = bytearray(2)
 pro = bytearray(2)
 
+bufrgb = bytearray(6)
+red = bytearray(2)
+green = bytearray(2)
+blue = bytearray(2)
+
 rtc=machine.RTC()
-rtc.datetime((int(year), int(month), int(day), int(hh), int(mm), int(ss), 0, 0))
+rtc.datetime((int(year), int(month), int(day),0, int(hh), int(mm), int(ss), 0))
 rtc.datetime()
 
 while True:
@@ -98,10 +106,17 @@ while True:
 	lum = buf[0]*256 +buf[1]
 	pro = buf[2]*256 +buf[3]
 	
+        bufrgb = TCS3472.readRGB(bus, colordeviceAddr)
+        red = bufrgb[0]*256 + bufrgb[1]
+        blue = bufrgb[2]*256 + bufrgb[3]
+        green = bufrgb[4]*256 + bufrgb[5]
+        
         t = rtc.datetime()
+        
+        print ("RBG: %d" %red + " Green: %d" %green + " Blue: %d" %blue)
 	print ("Luminance: %d lux" %lum)
 	print ("Proximity: %d" %pro)
-        print ("Time: %d-" %t[0] + "%d-" %t[1] + "%d" %t[2], "%d:" %t[3], "%d:" %t[4], "%d" %t[5])
+        print ("Time: %d-" %t[0] + "%d-" %t[1] + "%d" %t[2], "%d:" %t[4], "%d:" %t[5], "%d" %t[6])
 
         #time = str(t[0])+ "_" + str(t[1]) + "_" + str(t[2))
         #data = "{Timestamp: %d_%d_%d:%d:%d:%d" (%t[0],%t[1],%t[2],%t[3],%t[4],%t[5])
