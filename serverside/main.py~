@@ -1,4 +1,7 @@
 import paho.mqtt.client as mqtt
+import time
+import json
+
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -6,25 +9,27 @@ def on_connect(client, userdata, flags, rc):
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.message_callback_add("esys/ATeam/B12S", board1_callback)
+    client.message_callback_add("esys/ATeam/BoardToServer", board1_callback)
     client.subscribe("esys/ATeam/#")
 
 # The callback for when a PUBLISH message is received from the server.
 def board1_callback(client, userdata, msg):
-	print(msg.topic+" "+str(msg.payload))
-	data = "hahahahahahhaha"
-	client.publish("eeys/ATeam/S2B1",data)
+	global i		
+	print(msg.topic+" "+str(msg.payload))	
+	data = "data recieved from board, %d" %i + "th iteration"
+	time.sleep(0.5)
+	i = i + 1
+	msgJ = json.loads(str(msg.payload))
+	print(msgJ['Hue'])
+	hue = msgJ['Hue']
+	
+	client.publish("esys/ATeam/ServerToBoard",data)
 
-
-def on_message(client, userdata, msg):
-	print(msg.topic+" "+str(msg.payload))
-	data = "hohoohohohohooh"
-	client.publish("eeys/ATeam/S2B1",data)
 
 client = mqtt.Client()
 client.on_connect = on_connect
-client.on_message = on_message
 
+i = 0
 client.connect("192.168.0.10", 1883, 60)
+print("successfully connected")
 client.loop_forever()
-
