@@ -176,16 +176,17 @@ while True:
         #Publish data over MQTT
 	#client.publish('esys/ATeam/BoardToServer', bytes(data, 'utf-8'))
         json_str = ujson.dumps(DATA)
-        client.publish('esys/ATeam/BoardToServer', bytes(json_str, 'utf-8'))
+        client.publish('esys/ATeam/BoardToServer', bytes(json_str, 'utf-8'), qos=1)
 
         #Put Device to sleep, and add delay
         time.sleep(0.5)
                 
         #Recieve Ack from Server
-        #client.disconnect()
-        #client.connect()
-        #client.set_callback(sub_nof)
-        #client.subscribe(b"esys/ATeam/ServerToBoard")
-        #client.wait_msg()
+        client.disconnect()
+        client.connect()
+        client.set_callback(sub_nof)
+        client.subscribe(b"esys/ATeam/ServerToBoard")
+        time.sleep(0.5)
+        client.check_msg()
 
 print('END')

@@ -74,7 +74,7 @@ set_network(CONFIG['eesid'],CONFIG['eepw'])
 client = MQTTClient(CONFIG['client_id'], CONFIG['broker'])
 client.set_callback(sub_cb)
 client.connect()
-client.subscribe(b"esys/time")
+client.subscribe(b"esys/time", qos=1)
 
 client.wait_msg()
 
@@ -176,7 +176,7 @@ while True:
         #Publish data over MQTT
 	#client.publish('esys/ATeam/BoardToServer', bytes(data, 'utf-8'))
         json_str = ujson.dumps(DATA)
-        client.publish('esys/ATeam/BoardToServer', bytes(json_str, 'utf-8'))
+        client.publish('esys/ATeam/BoardToServer', bytes(json_str, 'utf-8'), qos=1)
 
         #Put Device to sleep, and add delay
         time.sleep(0.5)
@@ -185,7 +185,8 @@ while True:
         client.disconnect()
         client.connect()
         client.set_callback(sub_nof)
-        client.subscribe(b"esys/ATeam/ServerToBoard")
+        client.subscribe(b"esys/ATeam/ServerToBoard", qos=1)
+        time.sleep(0.5)
         client.check_msg()
 
 print('END')
