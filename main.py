@@ -3,7 +3,7 @@ from machine import I2C,Pin,RTC
 import VCNL4010,conf,TCS3472
 from umqtt.simple import MQTTClient 
 import ubinascii
-import os
+import os,ujson
 
 def load_config():
     import ujson as json
@@ -51,6 +51,11 @@ def sub_cb(topic, msg):
     Tmsg = msg
     print((topic, msg))
 
+def sub_nof(topic, msg):
+    global Recv
+    Recv = msg
+    print((topic,msg))
+
 # These defaults are overwritten with the contents of /config.json by load_config()
 CONFIG = {
     "broker": "192.168.0.10", 
@@ -59,6 +64,9 @@ CONFIG = {
     "eesid": b"EEERover",
     "eepw": b"exhibition"
 }
+
+pin12 = machine.Pin(12,machine.Pin.OUT)
+
 
 load_config()
 set_network(CONFIG['eesid'],CONFIG['eepw'])
@@ -91,6 +99,7 @@ TCS3472.set(bus,colordeviceAddr)
 buf = bytearray(4)
 lum = bytearray(2)
 pro = bytearray(2)
+colour = ""
 
 bufrgb = bytearray(6)
 red = bytearray(2)
@@ -123,6 +132,27 @@ while True:
 		hsv = 240 + 120*(hsvR - hsvG)/((hsvR - hsvG) + (hsvB - hsvG))
 	else:
 		hsv = 120*(hsvG - hsvB)/((hsvR - hsvB) + (hsvG - hsvB))
+                
+                
+        if hsv > 160 and hsv < 170:
+                colour = "Blue"
+        elif hsv > 0 and hsv < 10:
+                colour = "Red"
+        elif hsv > 260 and hsv < 270:
+                colour = "Green"
+        elif hsv > 290 and hsv < 310:
+                colour = "Yellow"
+        elif hsv > 325 and hsv < 345:
+                colour = "Orange"
+        elif hsv > 190 and hsv < 220:
+                colour = "Cream White"
+        else: 
+            colour = "undefined"
+
+        if pro > 2300:
+            pin12.value(1)
+        else:
+            pin12.value(0)
 
         t = rtc.datetime()
         
@@ -130,12 +160,32 @@ while True:
 	print ("Luminance: %d lux" %lum)
 	print ("Proximity: %d" %pro)
         print ("Time: %d-" %t[0] + "%d-" %t[1] + "%d" %t[2], "%d:" %t[4], "%d:" %t[5], "%d" %t[6])
+        print ("Colour: %s" %colour)
 
-        #time = str(t[0])+ "_" + str(t[1]) + "_" + str(t[2))
-        #data = "{Timestamp: %d_%d_%d:%d:%d:%d" (%t[0],%t[1],%t[2],%t[3],%t[4],%t[5])
-	data = "{Luminance: %d," %lum + "Proximity: %d}" %pro
+	data = "{\"Time\": %d-" %t[0] + "%d-" %t[1] + "%d " %t[2] + "%d" %t[4] + ":%d" %t[5] + ":%d, " %t[6] + "\"Luminance\": %d, " %lum + "\"Proximity\": %d, " %pro + "\"Hue\": %d }" %hsv 
 
-	client.publish(CONFIG['topic'], bytes(data, 'utf-8'))
+        #Put Data into JSON
+        DATA = {
+            "Time" : "%d-" %t[0] + "%d-" %t[1] + "%d " %t[2] + "%d" %t[4] + ":%d" %t[5] + ":%d, " %t[6],
+            "Luminance" : "%d" %lum,
+            "Proximity" : "%d" %pro,
+            "Hue" : "%d" %hsv,
+            "Colour" : "%s" %colour
+        }
+
+        #Publish data over MQTT
+	#client.publish('esys/ATeam/BoardToServer', bytes(data, 'utf-8'))
+        json_str = ujson.dumps(DATA)
+        client.publish('esys/ATeam/BoardToServer', bytes(json_str, 'utf-8'))
+
+        #Put Device to sleep, and add delay
         time.sleep(0.5)
+                
+        #Recieve Ack from Server
+        client.disconnect()
+        client.connect()
+        client.set_callback(sub_nof)
+        client.subscribe(b"esys/ATeam/ServerToBoard")
+        client.check_msg()
 
 print('END')
