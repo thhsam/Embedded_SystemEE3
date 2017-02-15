@@ -74,7 +74,7 @@ set_network(CONFIG['eesid'],CONFIG['eepw'])
 client = MQTTClient(CONFIG['client_id'], CONFIG['broker'])
 client.set_callback(sub_cb)
 client.connect()
-client.subscribe(b"esys/time")
+client.subscribe(b"esys/time", qos=1)
 
 client.wait_msg()
 
@@ -89,7 +89,8 @@ ss = s[28]+s[29]
 client.disconnect() 
 client.connect()
 
-bus = I2C(scl = Pin(5),sda = Pin(4),freq=100000)
+bus = I2C(scl = Pin(13),sda = Pin(15),freq=100000)
+#bus2 = I2C(scl = Pin(13),sda = Pin(13)
 deviceAddr = 19
 colordeviceAddr = 41
 
@@ -185,7 +186,7 @@ while True:
         client.disconnect()
         client.connect()
         client.set_callback(sub_nof)
-        client.subscribe(b"esys/ATeam/ServerToBoard")
+        client.subscribe(b"esys/ATeam/ServerToBoard", qos=1)
         time.sleep(0.5)
         client.check_msg()
 
