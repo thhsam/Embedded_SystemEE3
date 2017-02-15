@@ -15,12 +15,12 @@ while True:
 	hsvB = float(green*16.0 / 4096.0)
 
 
-	if hsvR > hsvG && hsvR > hsvB:
+	if hsvR > hsvG and hsvR > hsvB:
 		if hsvB > hsvG:
 			hsv = (60 * ((hsvG - hsvB) / (hsvR - hsvG)) % 6)
 		else:
 			hsv = (60 * ((hsvG - hsvB) / (hsvR - hsvB)) % 6)
-	elif hsvG > hsvB && hsvG > hsvR:
+	elif hsvG > hsvB and hsvG > hsvR:
 		if hsvB > hsvR:
 			hsv = (60 * ((hsvB - hsvR) / (hsvG - hsvR)) + 2)
 		else:
