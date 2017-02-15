@@ -47,10 +47,10 @@ i = 0
 
 root = tk.Tk()
 board = GameBoard(root)
-pwnW = tk.PhotoImage(file = "0.gif")
-pwnB = tk.PhotoImage(file = "1.gif")
+pwnW = tk.PhotoImage(file = "pawnW.gif")
+pwnB = tk.PhotoImage(file = "pawnB.gif")
 for i in range(0,8):
-	board.addpiece("player%d"%i, pwnW, 1,i)
+	#board.addpiece("player%d"%i, pwnW, 1,i)
 	board.addpiece("player%d"%(i+8), pwnB, 6,i)
 
 board.pack(side="top", fill="both", expand="true", padx=4, pady=4)
