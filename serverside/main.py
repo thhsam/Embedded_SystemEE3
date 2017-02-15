@@ -31,6 +31,7 @@ def board1_callback(client, userdata, msg):
 	}
 	board.update()
 	client.publish("esys/ATeam/ServerToBoard",json.dumps(DATA))
+
 def _main(event):
 	global client
 	global board

@@ -44,8 +44,6 @@ def set_network(EESID, EEPW):
 
     print('network config:', sta_if.ifconfig())
 
-
-
 def sub_cb(topic, msg):
     global Tmsg
     Tmsg = msg

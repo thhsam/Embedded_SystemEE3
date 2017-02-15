@@ -74,7 +74,7 @@ set_network(CONFIG['eesid'],CONFIG['eepw'])
 client = MQTTClient(CONFIG['client_id'], CONFIG['broker'])
 client.set_callback(sub_cb)
 client.connect()
-client.subscribe(b"esys/time")
+client.subscribe(b"esys/time", qos=1)
 
 client.wait_msg()
 
@@ -185,7 +185,7 @@ while True:
         client.disconnect()
         client.connect()
         client.set_callback(sub_nof)
-        client.subscribe(b"esys/ATeam/ServerToBoard")
+        client.subscribe(b"esys/ATeam/ServerToBoard", qos=1)
         time.sleep(0.5)
         client.check_msg()
 
