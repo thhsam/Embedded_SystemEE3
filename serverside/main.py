@@ -1,7 +1,8 @@
 import paho.mqtt.client as mqtt
 import time
 import json
-
+from cb import GameBoard
+import Tkinter as tk
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -23,13 +24,37 @@ def board1_callback(client, userdata, msg):
 	print(msgJ['Hue'])
 	hue = msgJ['Hue']
 	
-	client.publish("esys/ATeam/ServerToBoard",data)
+	DATA = {
+	    "Name": 'Server',
+	    "iteration": i,
+	    "1c": 1
+	}
+	board.update()
+	client.publish("esys/ATeam/ServerToBoard",json.dumps(DATA))
 
-
-client = mqtt.Client()
-client.on_connect = on_connect
-
+def _main(event):
+	global client
+	global board
+	print event.x, event.y
+	board.removepiece("player0")
+'''
+	client = mqtt.Client()
+	client.on_connect = on_connect
+	client.connect("192.168.0.10", 1883, 60)
+	client.loop_forever()
+'''
 i = 0
-client.connect("192.168.0.10", 1883, 60)
-print("successfully connected")
-client.loop_forever()
+
+root = tk.Tk()
+board = GameBoard(root)
+pwnW = tk.PhotoImage(file = "0.gif")
+pwnB = tk.PhotoImage(file = "1.gif")
+for i in range(0,8):
+	board.addpiece("player%d"%i, pwnW, 1,i)
+	board.addpiece("player%d"%(i+8), pwnB, 6,i)
+
+board.pack(side="top", fill="both", expand="true", padx=4, pady=4)
+root.bind("<Button-1>", _main)
+
+root.mainloop()
+
