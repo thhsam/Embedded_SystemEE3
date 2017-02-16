@@ -73,9 +73,19 @@ if __name__ == "__main__":
 	chesstype["O2"] = tk.PhotoImage(file = "rookW.gif")
 	chesstype["C2"] = tk.PhotoImage(file = "pawnW.gif")
 
-	for i in range(0,8):
-		board.addpiece("player%d"%i, chesstype["C2"], 1,i)
+	board.addpiece("player1", chesstype["G2"], 0,2)
+	board.addpiece("player2", chesstype["Y2"], 1,5)
+
+	for i in range(0,7):
+		#board.addpiece("player%d"%i, chesstype["C2"], 1,i)
 		board.addpiece("player%d"%(i+8), chesstype["C"], 6,i)
+	board.removepiece("player13")
+	board.removepiece("player9")
+	board.removepiece("player14")
+	board.addpiece("player9", chesstype["C"] , 5 ,1)
+	board.addpiece("player15", chesstype["C"] , 4 ,7)
+	
+	
 	
 	empty = tk.PhotoImage(file = "Blank.gif")
 	board.addpiece("t45",empty,4,5)
