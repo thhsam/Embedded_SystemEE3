@@ -207,7 +207,7 @@ while True:
         print ("Colour: %s" %hue[i])
         print ("Colour: %s" %col[i])
 
-        data = "{\"Time\": %d-" %t[0] + "%d-" %t[1] + "%d " %t[2] + "%d" %t[4] + ":%d" %t[5] + ":%d, " %t[6] + "\"Luminance\": %d, " %lum[i] + "\"Proximity\": %d, " %pro[i] + "\"Hue\": %d }" %hue[i]
+    data = "{\"Time\": %d-" %t[0] + "%d-" %t[1] + "%d " %t[2] + "%d" %t[4] + ":%d" %t[5] + ":%d, " %t[6] + "\"Luminance\": %d, " %lum[i] + "\"Proximity\": %d, " %pro[i] + "\"Hue\": %d }" %hue[i]
 
 
     #Put Data into JSON
@@ -227,13 +227,13 @@ while True:
     #Put Device to sleep, and add delay
     time.sleep(0.5)
         
-        
-        #Recieve Ack from Server
-        client.disconnect()
-        client.connect()
-        client.set_callback(sub_nof)
-        client.subscribe(b"esys/ATeam/ServerToBoard", qos=1)
-        time.sleep(0.5)
-        client.check_msg()
-
+    '''    
+    #Recieve Ack from Server
+    client.disconnect()
+    client.connect()
+    client.set_callback(sub_nof)
+    client.subscribe(b"esys/ATeam/ServerToBoard", qos=1)
+    time.sleep(0.5)
+    client.check_msg()
+    '''
 print('END')

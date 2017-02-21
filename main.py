@@ -1,10 +1,11 @@
+#.................................................
 # INFO:
 # The A-Team (IChess) Production Code v1
 # Date: 21/02/17
 # Author: thh13, hsl113, yw11614, lpl214
 #
-#
-
+# Imperial College London 2017
+#..................................................
 
 import time,machine,network, ubinascii, os, ujson, VCNL4010,conf,TCS3472
 from machine import I2C,Pin,RTC
@@ -175,7 +176,7 @@ bufrgb = bytearray(6)
 
 
 #We have used polling instead of interrupt, this is becasue we want to constantly know the status of the board.
-
+#
 
 
 #Main LOOP
@@ -219,7 +220,7 @@ while True:
     }
 
 
-    #Publish data over MQTT
+    #Publish data over MQTT using QoS 1
     #client.publish('esys/ATeam/BoardToServer', bytes(data, 'utf-8'))
     json_str = ujson.dumps(DATA)
     client.publish('esys/ATeam/BoardToServer', bytes(json_str, 'utf-8'), qos=1)
