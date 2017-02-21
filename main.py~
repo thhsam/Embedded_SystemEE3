@@ -1,10 +1,17 @@
-import time,machine,network
-from machine import I2C,Pin,RTC
-import VCNL4010,conf,TCS3472
-from umqtt.simple import MQTTClient 
-import ubinascii
-import os,ujson
+# INFO:
+# The A-Team (IChess) Production Code v1
+# Date: 21/02/17
+# Author: thh13, hsl113, yw11614, lpl214
+#
+#
 
+
+import time,machine,network, ubinascii, os, ujson, VCNL4010,conf,TCS3472
+from machine import I2C,Pin,RTC
+from umqtt.simple import MQTTClient
+
+
+#function to load config file to set MMQT topics and broker
 def load_config():
     import ujson as json
     try:
@@ -17,7 +24,7 @@ def load_config():
         CONFIG.update(config)
         print("Loaded config from /config.json")
 
-
+#function to save config settings
 def save_config():
     import ujson as json
     try:
@@ -26,6 +33,7 @@ def save_config():
     except OSError:
         print("Couldn't save /config.json")
 
+#function to connect to wifi
 def set_network(EESID, EEPW):
     import network
     #Disable Automatic Access Point(AP) to reduce Overheads
@@ -36,24 +44,25 @@ def set_network(EESID, EEPW):
     if not sta_if.isconnected():
     #Connect to a specificed WiFi Network
         print('connecting to netowrk...')
-    
         sta_if.active(True)
         sta_if.connect(EESID, EEPW)
         while not sta_if.isconnected():
             pass
-
     print('network config:', sta_if.ifconfig())
 
+#Callback function to set global time to broker time
 def sub_cb(topic, msg):
     global Tmsg
     Tmsg = msg
     print((topic, msg))
 
+#Callback function to receive message from the server side
 def sub_nof(topic, msg):
     global Recv
     Recv = msg
     print((topic,msg))
 
+#function to find the hue settings
 def find_hue(r,g,b):
 	hsvR = float(r * 1.0)
 	hsvG = float(b * 1.0)
@@ -69,6 +78,7 @@ def find_hue(r,g,b):
 		hsv = 120*(hsvG - hsvB)/((hsvR - hsvB) + (hsvG - hsvB))
 	return hsv
 
+#function to find the colour
 def find_color(hsv):
     #Blue Bishop
     if hsv > 160 and hsv < 170:
@@ -80,7 +90,7 @@ def find_color(hsv):
     elif hsv > 260 and hsv < 270:
         colour = "G"
     #Yellow Knight
-    elif hsv > 290 and hsv < 310:
+    elif hsv > 290 and hsv < 315:
         colour = "Y"
     #Orange Castle
     elif hsv > 325 and hsv < 345:
@@ -101,34 +111,8 @@ CONFIG = {
     "eesid": b"EEERover",
     "eepw": b"exhibition"
 }
-pin = [None]*3
 
-pin[0] = machine.Pin(12,machine.Pin.OUT)
-pin[1] = machine.Pin(0,machine.Pin.OUT)
-#pin[2] = machine.Pin(2,machine.Pin.OUT)
-
-load_config()
-set_network(CONFIG['eesid'],CONFIG['eepw'])
-
-client = MQTTClient(CONFIG['client_id'], CONFIG['broker'])
-client.set_callback(sub_cb)
-client.connect()
-client.subscribe(b"esys/time", qos=1)
-'''
-client.wait_msg()
-'''
-Tmsg = "11111111111111111111111111111111111"
-s = str(Tmsg)
-year = s[11]+s[12]+s[13]+s[14]
-month = s[16]+s[17]
-day = s[19]+s[20]
-hh = s[22]+s[23]
-mm = s[25]+s[26]
-ss = s[28]+s[29]        
-
-client.disconnect() 
-client.connect()
-
+#Declare buffer for results from sensors
 buf = bytearray(4)
 lum = [None]*3
 pro = [None]*3
@@ -137,27 +121,68 @@ bus = [None]*3
 hue = [None]*3
 
 
-bus[0] = I2C(scl = Pin(5),sda = Pin(4),freq=100000)
-bus[1] = I2C(scl = Pin(5),sda = Pin(16),freq=100000)
-#bus[2] = I2C(scl = Pin(5),sda = Pin(14),freq=100000)
+#Declare array of GPIO pins
+pin = [None]*3
+pin[0] = machine.Pin(12,machine.Pin.OUT)
+pin[1] = machine.Pin(0,machine.Pin.OUT)
+#pin[2] = machine.Pin(2,machine.Pin.OUT)        #used to connect with the third set of sensor
 
-deviceAddr = 19
-colordeviceAddr = 41
+#Connect to MQTT WIFI
+load_config()
+set_network(CONFIG['eesid'],CONFIG['eepw'])
 
-for index in range(0,2):
-	VCNL4010.init_all(bus[index],deviceAddr)
-	TCS3472.set(bus[index],colordeviceAddr)
+#Connect to MQTT Broker
+client = MQTTClient(CONFIG['client_id'], CONFIG['broker'])
+client.set_callback(sub_cb)
+client.connect()
+#Subscrib to Sys Time using QoS = 1
+client.subscribe(b"esys/time", qos=1)
+client.wait_msg()
 
+#Arrange Sys Time format
+s = str(Tmsg)
+year = s[11]+s[12]+s[13]+s[14]
+month = s[16]+s[17]
+day = s[19]+s[20]
+hh = s[22]+s[23]
+mm = s[25]+s[26]
+ss = s[28]+s[29]
 
-bufrgb = bytearray(6)
-
+#Set System time
 rtc=machine.RTC()
 rtc.datetime((int(year), int(month), int(day),0, int(hh), int(mm), int(ss), 0))
 rtc.datetime()
 
+#Reset MQTT connection
+client.disconnect() 
+client.connect()
+
+#Set I2C pins
+bus[0] = I2C(scl = Pin(5),sda = Pin(4),freq=100000)
+bus[1] = I2C(scl = Pin(5),sda = Pin(16),freq=100000)
+#bus[2] = I2C(scl = Pin(5),sda = Pin(14),freq=100000)
+
+#Sensor I2C Address
+deviceAddr = 19
+colordeviceAddr = 41
+
+#Init Sensors
+for index in range(0,2):
+	VCNL4010.init_all(bus[index],deviceAddr)
+	TCS3472.set(bus[index],colordeviceAddr)
+
+bufrgb = bytearray(6)
+
+
+#We have used polling instead of interrupt, this is becasue we want to constantly know the status of the board.
+
+
+
+#Main LOOP
 while True:
     
     for i in range(0,2):
+        #Read Data from Sensor
         buf = VCNL4010.read_all(bus[i],deviceAddr)
         lum[i] = buf[0]*256 +buf[1]
         pro[i] = buf[2]*256 +buf[3]
@@ -174,6 +199,7 @@ while True:
 
         t = rtc.datetime()
 		
+        #for debug
         print ("\nblock%d:")
         print ("Luminance: %d lux" %lum[i])
         print ("Proximity: %d" %pro[i])
@@ -200,13 +226,14 @@ while True:
 
     #Put Device to sleep, and add delay
     time.sleep(0.5)
-'''                
-        #Recieve Ack from Server
-        client.disconnect()
-        client.connect()
-        client.set_callback(sub_nof)
-        client.subscribe(b"esys/ATeam/ServerToBoard", qos=1)
-        time.sleep(0.5)
-        client.check_msg()
-'''
+        
+    '''    
+    #Recieve Ack from Server
+    client.disconnect()
+    client.connect()
+    client.set_callback(sub_nof)
+    client.subscribe(b"esys/ATeam/ServerToBoard", qos=1)
+    time.sleep(0.5)
+    client.check_msg()
+    '''
 print('END')
