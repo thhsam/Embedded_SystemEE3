@@ -1,8 +1,24 @@
+#---------------------------------------------------------------
+# Code used to collect data from boards
+# Able to connect to board through mqtt messages, return 
+# information based on calculations. The status of both boards
+# will also be visible through a GUI.
+# A right click is required to enable mqtt transmission.
+#
+# In full version, it will be able to connect multiple boards,
+# select between different board games, and is able to check
+# validity of current status, and hint players of valid following
+# moves
+#
+# 2017. Imperial Colege London
+#---------------------------------------------------------------
+
 import paho.mqtt.client as mqtt
 import time
 import json
 from cb import GameBoard
 import Tkinter as tk
+
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -15,15 +31,14 @@ def on_connect(client, userdata, flags, rc):
 
 # The callback for when a PUBLISH message is received from the server.
 def board1_callback(client, userdata, msg):
-	global board,i,chesstype
+	global board,chesstype
+	# printing debug messages
 	print(msg.topic+" "+str(msg.payload))	
-	data = "data recieved from board, %d" %i + "th iteration"
-	time.sleep(0.5)
-	i = i + 1
 	msgJ = json.loads(str(msg.payload))
 	print("t45" + str(msgJ['t45']))
 	print("t46" + str(msgJ['t46']))
 
+	
 	if msgJ['t45'] != "U":
 		board.removepiece("t45")
 		board.addpiece("t45",chesstype[msgJ['t45']],4,5)
@@ -34,7 +49,7 @@ def board1_callback(client, userdata, msg):
 		board.addpiece("t46",chesstype[msgJ['t46']],4,6)
 	else:
 		board.removepiece("t46")
-
+	#sending chessboard data to the board(s); in full version, will consist of data for the entire board.
 	DATA = {
 	    "Name": 'Server',
 	    "t11": 1
@@ -53,8 +68,7 @@ def _main(event):
 	client.loop_forever()
 if __name__ == "__main__":
 
-	i = 0
-	#setting up the board
+	#setting up the board with default pieces, since the full version is not acquirable
 	root = tk.Tk()
 	board = GameBoard(root)
 	
@@ -73,18 +87,18 @@ if __name__ == "__main__":
 	chesstype["O2"] = tk.PhotoImage(file = "rookW.gif")
 	chesstype["C2"] = tk.PhotoImage(file = "pawnW.gif")
 
-	board.addpiece("player1", chesstype["G2"], 0,2)
-	board.addpiece("player2", chesstype["Y2"], 1,5)
+
 
 	for i in range(0,7):
-		#board.addpiece("player%d"%i, chesstype["C2"], 1,i)
+		board.addpiece("player%d"%i, chesstype["C2"], 1,i)
 		board.addpiece("player%d"%(i+8), chesstype["C"], 6,i)
 	board.removepiece("player13")
 	board.removepiece("player9")
 	board.removepiece("player14")
-	board.addpiece("player9", chesstype["C"] , 3 ,1)
+	board.addpiece("player9", chesstype["C"] , 5 ,1)
 	board.addpiece("player15", chesstype["C"] , 4 ,7)
-	
+	board.addpiece("player16", chesstype["G2"], 0,2)
+	board.addpiece("player17", chesstype["Y2"], 2,5)	
 	
 	
 	empty = tk.PhotoImage(file = "Blank.gif")

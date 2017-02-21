@@ -1,3 +1,10 @@
+#------------------------------------------------------------
+# Credit to Bryan Oakley @http://stackoverflow.com/users/7432/bryan-oakley
+#
+# Modified by Max Wang
+#
+# 2017. Imperial Colege London
+#------------------------------------------------------------
 import Tkinter as tk
 from PIL import Image, ImageTk
 class GameBoard(tk.Frame):

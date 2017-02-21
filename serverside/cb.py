@@ -5,6 +5,7 @@
 #
 # 2017. Imperial Colege London
 #------------------------------------------------------------
+
 import Tkinter as tk
 from PIL import Image, ImageTk
 class GameBoard(tk.Frame):
